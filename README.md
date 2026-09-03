@@ -3,13 +3,12 @@
 
 | Name | Version |
 | ---- | ------- |
-| [terraform](#requirement_terraform) | > 1.3 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | > 1.3 |
+| <a name="requirement_twilio"></a> [twilio](#requirement\_twilio) | 0.27.1 |
 
 ## Providers
 
-| Name | Version |
-| ---- | ------- |
-| [twilio](#provider_twilio) | 0.27.1 |
+No providers.
 
 ## Modules
 
