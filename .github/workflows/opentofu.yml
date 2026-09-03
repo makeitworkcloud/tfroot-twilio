@@ -14,27 +14,6 @@ permissions:
   pull-requests: write
 
 jobs:
-  # Temporary diagnostic: emits only the non-sensitive OIDC subject needed to
-  # scope the existing AWS KMS trust policy to this exact repository. Remove
-  # this job once that trust-policy correction is validated.
-  oidc-subject:
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: read
-      id-token: write
-    runs-on: arc-tf
-    steps:
-      - name: Emit non-sensitive OIDC subject
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const token = await core.getIDToken('sts.amazonaws.com');
-            const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            const claims = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
-            console.log(`OIDC subject: ${claims.sub}`);
-
   opentofu:
     if: >-
       github.event_name != 'pull_request' ||
