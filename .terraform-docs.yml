@@ -1,0 +1,20 @@
+formatter: "markdown"
+
+output:
+  file: "README.md"
+  mode: replace
+  template: |
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+
+settings:
+  color: false
+  lockfile: false
+
+sort:
+  enabled: true
+  by: name
+
+recursive:
+  enabled: false
