@@ -1,0 +1,14 @@
+**/*.sw[po]
+
+# Do not commit OpenTofu state, lock files, or working directories.
+**/.terraform.lock.hcl
+**/.terraform
+
+**/.vscode
+**/.DS_Store
+
+plan-output.txt
+
+# Generated canonical pre-commit configuration
+/.pre-commit-config.yaml
+/.pre-commit-config.yaml.tmp
