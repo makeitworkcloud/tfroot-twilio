@@ -19,21 +19,20 @@ init: clean
 		-backend-config="region=${S3_REGION}" \
 		-backend-config="use_lockfile=true"
 
-# The encrypted file is verified and exposed only to this short-lived child
-# process. It does not configure the Twilio provider or call Twilio APIs.
+# Verify ciphertext and required keys without printing values. plan and apply run
+# OpenTofu inside a separate SOPS exec-env child so the provider can authenticate.
 credentials-check:
 	@test -f "${TWILIO_CREDENTIALS}"
 	@sops filestatus "${TWILIO_CREDENTIALS}" | jq -e '.encrypted == true' >/dev/null
 	@sops exec-env "${TWILIO_CREDENTIALS}" 'test -n "$$TWILIO_ACCOUNT_SID" && test -n "$$TWILIO_API_KEY" && test -n "$$TWILIO_API_SECRET"'
 
 plan: init credentials-check
-	@${TERRAFORM} plan -refresh=false -input=false -compact-warnings
+	@sops exec-env "${TWILIO_CREDENTIALS}" '${TERRAFORM} plan -refresh=false -input=false -compact-warnings'
 
-# There are intentionally no provider configurations or Twilio resources in
-# this root, so backend selection and encrypted-credential validation are the
-# only stateful behaviors on main.
+# This root has no Twilio resources. Provider authentication may perform its
+# own read-only validation, but apply has no Twilio resource action to perform.
 apply: init credentials-check
-	@${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings
+	@sops exec-env "${TWILIO_CREDENTIALS}" '${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings'
 
 test: pre-commit-config pre-commit-install-hooks
 	@pre-commit run -a

@@ -11,5 +11,6 @@ terraform {
   }
 }
 
-# No provider block is declared. The selected backend is independent of Twilio
-# credentials and resource management; those remain separate follow-up gates.
+# Authentication is supplied only through TWILIO_ACCOUNT_SID, TWILIO_API_KEY,
+# and TWILIO_API_SECRET in SOPS exec-env. Do not add static credentials here.
+provider "twilio" {}
