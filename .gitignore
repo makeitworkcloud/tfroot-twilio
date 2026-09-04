@@ -15,6 +15,5 @@ plan-output.txt
 
 # Ignore plaintext credential files. Only the validated SOPS ciphertext path is tracked.
 /secrets/*.env
-!/secrets/*.sops.env
 /secrets/*.yaml
 !/secrets/secrets.yaml
