@@ -8,9 +8,9 @@ The evaluated provider is `RJPearson94/twilio` `0.27.1`. It is community-maintai
 
 ## Intended message flow
 
-The owner’s intended outcome is one Twilio phone number for each primary agent: `lawnmowerman`, `grillmaster`, `homesteader`, and `homerepair`. Each number will accept inbound SMS/MMS only from the one owner-approved source phone number, then route the request to its corresponding agent for a timely reply using that agent’s existing context, knowledge base, and MCP integrations.
+The owner’s intended outcome is one Twilio phone number for each primary agent: `lawnmowerman`, `grillmaster`, `homesteader`, and `homerepair`. Each number will initially accept inbound SMS/MMS only from the one owner-approved source phone number, then route the request to its corresponding agent for a timely reply using that agent’s existing context, knowledge base, and MCP integrations. The sender allowlist is intentionally extensible: adding a further approved source number after the pilot is a separate runtime-configuration change, not a Twilio-root redesign.
 
-`kustomize-cluster` exclusively owns the bridge workload, number-to-agent map, one-number sender allowlist, runtime secrets, `TunnelBinding`/DNS, and public route. This root may later own only the Twilio number inventory and the inbound messaging-webhook fields pointing at the already-healthy bridge. It must not duplicate any bridge/runtime configuration.
+`kustomize-cluster` exclusively owns the bridge workload, number-to-agent map, sender allowlist and its later expansion, runtime secrets, `TunnelBinding`/DNS, and public route. This root may later own only the Twilio number inventory and the inbound messaging-webhook fields pointing at the already-healthy bridge. It must not duplicate any bridge/runtime configuration.
 
 ## Backend and credential contract
 
