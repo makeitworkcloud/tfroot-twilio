@@ -2,21 +2,23 @@
 
 ## Scope
 
-This root validates the OpenTofu toolchain, remote state backend, and encrypted provider-credential delivery only. It creates, imports, updates, or deletes **no** Twilio resources. In particular, it does not purchase or configure phone numbers, webhooks, messaging services, or runtime routing.
+This root validates the OpenTofu toolchain, remote state backend, encrypted provider-credential delivery, and Twilio provider authentication only. It creates, imports, updates, or deletes **no** Twilio resources. In particular, it does not purchase or configure phone numbers, webhooks, messaging services, or runtime routing.
 
-The evaluated provider is `RJPearson94/twilio` `0.27.1`. Registry documentation confirms it supports Twilio phone-number resources and inbound `messaging` webhook fields, but it is community-maintained and requires existing account credentials. The root intentionally declares no provider configuration, so CI validates SOPS credential delivery without performing a provider-side API call.
+The evaluated provider is `RJPearson94/twilio` `0.27.1`. It is community-maintained and requires existing account credentials. The provider is intentionally configured with no static attributes: OpenTofu receives its credentials only in a SOPS `exec-env` child. Its authentication validation may perform a read-only Twilio API request; no resource is declared or changed by this root.
 
-## Ownership boundary
+## Intended message flow
 
-The future root may own only Twilio phone-number inventory and inbound messaging-webhook configuration. `kustomize-cluster` remains the owner of the OpenCode bridge workload, workload `TunnelBinding`/DNS, fixed number-to-agent map, approved-source allowlist, runtime secrets, and runtime-encryption inputs. The root must never create a bridge-worker API key or duplicate a runtime owner.
+The owner’s intended outcome is one Twilio phone number for each primary agent: `lawnmowerman`, `grillmaster`, `homesteader`, and `homerepair`. Each number will initially accept inbound SMS/MMS only from the one owner-approved source phone number, then route the request to its corresponding agent for a timely reply using that agent’s existing context, knowledge base, and MCP integrations. The sender allowlist is intentionally extensible: adding a further approved source number after the pilot is a separate runtime-configuration change, not a Twilio-root redesign.
+
+`kustomize-cluster` exclusively owns the bridge workload, number-to-agent map, sender allowlist and its later expansion, runtime secrets, `TunnelBinding`/DNS, and public route. This root may later own only the Twilio number inventory and the inbound messaging-webhook fields pointing at the already-healthy bridge. It must not duplicate any bridge/runtime configuration.
 
 ## Backend and credential contract
 
 [`tfroot-aws` PR #43](https://github.com/makeitworkcloud/tfroot-aws/pull/43) created the canonical backend producer: a dedicated private, encrypted, versioned bucket and an exact-repository GitHub OIDC role restricted to the state object, lockfile, and SOPS KMS decrypt/describe access. This root selects that backend through the reusable workflow's `aws-role-to-assume` input and uses S3 native locking. No static AWS backend credential is stored in source or GitHub Actions secrets.
 
-The checked-in `.sops.yaml` identifies the approved encryption recipient. `secrets/secrets.yaml` is the only accepted provider credential file. It holds the encrypted `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, and `TWILIO_API_SECRET` values; it must never contain bridge runtime inputs. `make plan` and `make apply` first require SOPS to recognize the file as encrypted, then use `sops exec-env` to assert the three variables in a short-lived child process. They never write plaintext files, set static provider attributes, or use GitHub Actions secrets. The older `secrets/twilio.sops.env.example` placeholder is superseded and must not be used.
+The checked-in `.sops.yaml` identifies the approved encryption recipient. `secrets/secrets.yaml` is the only accepted provider credential file. It holds the encrypted `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, and `TWILIO_API_SECRET` values; it must never contain bridge runtime inputs. `make plan` and `make apply` first require SOPS to recognize the file as encrypted, then run OpenTofu inside `sops exec-env`. They never write plaintext files, set static provider attributes, or use GitHub Actions secrets.
 
-Only after the encrypted credential path passes pull-request validation may a later root change add provider configuration or Twilio inventory. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
+This provider-only change must pass pull-request validation before later Twilio inventory or webhook work is proposed. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
 
 ## Central generated files
 
