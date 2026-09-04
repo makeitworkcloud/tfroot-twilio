@@ -21,18 +21,19 @@ init: clean
 
 # Verify ciphertext and required keys without printing values. plan and apply run
 # OpenTofu inside a separate SOPS exec-env child so the provider can authenticate.
+# The account SID reaches OpenTofu only as TF_VAR_account_sid inside that child.
 credentials-check:
 	@test -f "${TWILIO_CREDENTIALS}"
 	@sops filestatus "${TWILIO_CREDENTIALS}" | jq -e '.encrypted == true' >/dev/null
 	@sops exec-env "${TWILIO_CREDENTIALS}" 'test -n "$$TWILIO_ACCOUNT_SID" && test -n "$$TWILIO_API_KEY" && test -n "$$TWILIO_API_SECRET"'
 
 plan: init credentials-check
-	@sops exec-env "${TWILIO_CREDENTIALS}" '${TERRAFORM} plan -refresh=false -input=false -compact-warnings'
+	@sops exec-env "${TWILIO_CREDENTIALS}" 'TF_VAR_account_sid="$$TWILIO_ACCOUNT_SID" ${TERRAFORM} plan -refresh=false -input=false -compact-warnings'
 
-# This root has no Twilio resources. Provider authentication may perform its
-# own read-only validation, but apply has no Twilio resource action to perform.
+# The four twilio_phone_number.agent resources purchase pilot numbers on apply.
+# No inbound webhook field is set until the bridge is deployed and healthy.
 apply: init credentials-check
-	@sops exec-env "${TWILIO_CREDENTIALS}" '${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings'
+	@sops exec-env "${TWILIO_CREDENTIALS}" 'TF_VAR_account_sid="$$TWILIO_ACCOUNT_SID" ${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings'
 
 test: pre-commit-config pre-commit-install-hooks
 	@pre-commit run -a
