@@ -8,13 +8,15 @@ The evaluated provider is `RJPearson94/twilio` `0.27.1`. Registry documentation 
 
 ## Ownership boundary
 
-The future root may own only Twilio phone-number inventory and inbound messaging-webhook configuration. `kustomize-cluster` remains the owner of the OpenCode bridge workload, workload `TunnelBinding`/DNS, fixed number-to-agent map, approved-source allowlist, runtime secrets, and state-encryption inputs. The root must never create a bridge-worker API key or duplicate a runtime owner.
+The future root may own only Twilio phone-number inventory and inbound messaging-webhook configuration. `kustomize-cluster` remains the owner of the OpenCode bridge workload, workload `TunnelBinding`/DNS, fixed number-to-agent map, approved-source allowlist, runtime secrets, and runtime-encryption inputs. The root must never create a bridge-worker API key or duplicate a runtime owner.
 
 ## Backend and credential contract
 
 [`tfroot-aws` PR #43](https://github.com/makeitworkcloud/tfroot-aws/pull/43) created the canonical backend producer: a dedicated private, encrypted, versioned bucket and an exact-repository GitHub OIDC role restricted to the state object, lockfile, and SOPS KMS decrypt/describe access. This root selects that backend through the reusable workflow's `aws-role-to-assume` input and uses S3 native locking. No static AWS backend credential is stored in source or GitHub Actions secrets.
 
-The checked-in `.sops.yaml` identifies the approved encryption recipient but no encrypted secret file exists yet. A later, separately reviewed change must define a Twilio credential delivery path that cannot expose a token in source, CI logs, or OpenTofu state. Only after that prerequisite passes pull-request validation may a later root change add provider configuration or Twilio inventory. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
+The checked-in `.sops.yaml` identifies the approved encryption recipient. The tracked [`secrets/twilio.sops.env.example`](../secrets/twilio.sops.env.example) is placeholders only. Before any provider configuration is authored, an authorized owner must create the exact `secrets/twilio.sops.env` file from that template, replace its three values only on a secure workstation, encrypt it with the repository's SOPS policy, and commit only the resulting ciphertext. The future file will contain `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY`, and `TWILIO_API_SECRET`; it must never contain bridge runtime inputs. The provider process will receive those values through SOPS `exec-env`, not static provider attributes, plaintext files, or GitHub Actions secrets.
+
+Only after the encrypted credential path passes pull-request validation may a later root change add provider configuration or Twilio inventory. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
 
 ## Central generated files
 
