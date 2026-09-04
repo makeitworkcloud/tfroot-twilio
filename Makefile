@@ -1,23 +1,30 @@
 SHELL     := /bin/bash
 TERRAFORM := $(shell which tofu)
+S3_BUCKET := mitw-tf-twilio-infra
+S3_REGION := us-west-2
+S3_KEY    := tofu/twilio/terraform.tfstate
 
 .PHONY: clean init plan apply test pre-commit-config pre-commit-check-deps pre-commit-install-hooks
 
 clean:
 	@find . -name .terraform -type d | xargs -r rm -rf
 
-# Bootstrap deliberately uses no remote backend until the encrypted backend
-# contract and least-privilege CI access are established in a later PR.
+# tfroot-aws owns this private, versioned state bucket and the GitHub OIDC role
+# that CI assumes. The backend needs no static AWS credentials.
 init: clean
-	@${TERRAFORM} init -backend=false -upgrade -input=false
+	@${TERRAFORM} init -reconfigure -upgrade -input=false \
+		-backend-config="bucket=${S3_BUCKET}" \
+		-backend-config="key=${S3_KEY}" \
+		-backend-config="region=${S3_REGION}" \
+		-backend-config="use_lockfile=true"
 
 plan: init
-	@${TERRAFORM} plan -refresh=false -input=false -lock=false -compact-warnings
+	@${TERRAFORM} plan -refresh=false -input=false -compact-warnings
 
 # There are intentionally no provider configurations or Twilio resources in
-# this bootstrap, so the main-branch apply has no provider-side effect.
+# this root, so backend selection is the only stateful behavior on main.
 apply: init
-	@${TERRAFORM} apply -auto-approve -refresh=false -input=false -lock=false -compact-warnings
+	@${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings
 
 test: pre-commit-config pre-commit-install-hooks
 	@pre-commit run -a

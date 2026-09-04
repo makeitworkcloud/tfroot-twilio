@@ -2,9 +2,9 @@
 
 ## Scope
 
-This initial root validates the OpenTofu toolchain and provider installation only. It creates, imports, updates, or deletes **no** Twilio resources. In particular, it does not purchase or configure phone numbers, webhooks, credentials, messaging services, or runtime routing.
+This root validates the OpenTofu toolchain, remote state backend, and provider installation only. It creates, imports, updates, or deletes **no** Twilio resources. In particular, it does not purchase or configure phone numbers, webhooks, credentials, messaging services, or runtime routing.
 
-The evaluated provider is `RJPearson94/twilio` `0.27.1`. Registry documentation confirms it supports Twilio phone-number resources and inbound `messaging` webhook fields, but it is community-maintained and requires existing account credentials. The bootstrap intentionally declares no provider configuration, so CI receives no Twilio credentials and performs no provider-side API call.
+The evaluated provider is `RJPearson94/twilio` `0.27.1`. Registry documentation confirms it supports Twilio phone-number resources and inbound `messaging` webhook fields, but it is community-maintained and requires existing account credentials. The root intentionally declares no provider configuration, so CI receives no Twilio credentials and performs no provider-side API call.
 
 ## Ownership boundary
 
@@ -12,13 +12,9 @@ The future root may own only Twilio phone-number inventory and inbound messaging
 
 ## Backend and credential contract
 
-The checked-in `.sops.yaml` identifies the approved encryption recipient but no encrypted secret file exists yet. A later, separately reviewed change must:
+[`tfroot-aws` PR #43](https://github.com/makeitworkcloud/tfroot-aws/pull/43) created the canonical backend producer: a dedicated private, encrypted, versioned bucket and an exact-repository GitHub OIDC role restricted to the state object, lockfile, and SOPS KMS decrypt/describe access. This root selects that backend through the reusable workflow's `aws-role-to-assume` input and uses S3 native locking. No static AWS backend credential is stored in source or GitHub Actions secrets.
 
-1. establish least-privilege GitHub Actions OIDC access for this exact repository to decrypt SOPS material;
-2. add an encrypted backend configuration for a dedicated Twilio state object; and
-3. define an existing Twilio credential delivery path that cannot expose a token in source, CI logs, or OpenTofu state.
-
-Only after those prerequisites pass pull-request validation may a later root change add provider configuration or Twilio inventory. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
+The checked-in `.sops.yaml` identifies the approved encryption recipient but no encrypted secret file exists yet. A later, separately reviewed change must define a Twilio credential delivery path that cannot expose a token in source, CI logs, or OpenTofu state. Only after that prerequisite passes pull-request validation may a later root change add provider configuration or Twilio inventory. Any actual Twilio provisioning or webhook update still requires explicit owner confirmation before merge because `main` invokes the environment-gated apply path.
 
 ## Central generated files
 
