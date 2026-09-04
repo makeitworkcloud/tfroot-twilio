@@ -8,7 +8,9 @@
 
 ## Providers
 
-No providers.
+| Name | Version |
+| ---- | ------- |
+| <a name="provider_twilio"></a> [twilio](#provider\_twilio) | 0.27.1 |
 
 ## Modules
 
@@ -16,13 +18,19 @@ No modules.
 
 ## Resources
 
-No resources.
+| Name | Type |
+| ---- | ---- |
+| [twilio_phone_number.agent](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/phone_number) | resource |
 
 ## Inputs
 
-No inputs.
+| Name | Description | Type | Default | Required |
+| ---- | ----------- | ---- | ------- | :------: |
+| <a name="input_account_sid"></a> [account\_sid](#input\_account\_sid) | Twilio account SID, supplied only from SOPS exec-env through TF\_VAR\_account\_sid. | `string` | n/a | yes |
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+| ---- | ----------- |
+| <a name="output_agent_phone_numbers"></a> [agent\_phone\_numbers](#output\_agent\_phone\_numbers) | Purchased pilot number for each primary agent. |
 <!-- END_TF_DOCS -->
