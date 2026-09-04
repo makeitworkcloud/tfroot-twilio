@@ -13,6 +13,8 @@ plan-output.txt
 /.pre-commit-config.yaml
 /.pre-commit-config.yaml.tmp
 
-# Ignore plaintext credential files. The exact SOPS ciphertext path is allowed.
+# Ignore plaintext credential files. Only the validated SOPS ciphertext path is tracked.
 /secrets/*.env
 !/secrets/*.sops.env
+/secrets/*.yaml
+!/secrets/secrets.yaml

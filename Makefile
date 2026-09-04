@@ -3,8 +3,9 @@ TERRAFORM := $(shell which tofu)
 S3_BUCKET := mitw-tf-twilio-infra
 S3_REGION := us-west-2
 S3_KEY    := tofu/twilio/terraform.tfstate
+TWILIO_CREDENTIALS := secrets/secrets.yaml
 
-.PHONY: clean init plan apply test pre-commit-config pre-commit-check-deps pre-commit-install-hooks
+.PHONY: clean init credentials-check plan apply test pre-commit-config pre-commit-check-deps pre-commit-install-hooks
 
 clean:
 	@find . -name .terraform -type d | xargs -r rm -rf
@@ -18,12 +19,20 @@ init: clean
 		-backend-config="region=${S3_REGION}" \
 		-backend-config="use_lockfile=true"
 
-plan: init
+# The encrypted file is verified and exposed only to this short-lived child
+# process. It does not configure the Twilio provider or call Twilio APIs.
+credentials-check:
+	@test -f "${TWILIO_CREDENTIALS}"
+	@sops filestatus "${TWILIO_CREDENTIALS}" | jq -e '.encrypted == true' >/dev/null
+	@sops exec-env "${TWILIO_CREDENTIALS}" 'test -n "$$TWILIO_ACCOUNT_SID" && test -n "$$TWILIO_API_KEY" && test -n "$$TWILIO_API_SECRET"'
+
+plan: init credentials-check
 	@${TERRAFORM} plan -refresh=false -input=false -compact-warnings
 
 # There are intentionally no provider configurations or Twilio resources in
-# this root, so backend selection is the only stateful behavior on main.
-apply: init
+# this root, so backend selection and encrypted-credential validation are the
+# only stateful behaviors on main.
+apply: init credentials-check
 	@${TERRAFORM} apply -auto-approve -refresh=false -input=false -compact-warnings
 
 test: pre-commit-config pre-commit-install-hooks
