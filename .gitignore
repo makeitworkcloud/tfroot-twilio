@@ -12,3 +12,8 @@ plan-output.txt
 # Generated canonical pre-commit configuration
 /.pre-commit-config.yaml
 /.pre-commit-config.yaml.tmp
+
+# Ignore plaintext credential files. Only the validated SOPS ciphertext path is tracked.
+/secrets/*.env
+/secrets/*.yaml
+!/secrets/secrets.yaml
