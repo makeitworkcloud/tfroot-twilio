@@ -9,8 +9,9 @@ variable "account_sid" {
 }
 
 locals {
-  inbound_messaging_url  = "https://sms.makeitwork.cloud/twilio/inbound"
-  messaging_service_name = "opencode-sms-bridge"
+  inbound_messaging_url          = "https://sms.makeitwork.cloud/twilio/inbound"
+  messaging_service_name         = "opencode-sms-bridge"
+  messaging_service_sender_agent = "lawnmowerman"
 
   agent_numbers = {
     lawnmowerman = "opencode-sms lawnmowerman"
@@ -42,10 +43,12 @@ resource "twilio_phone_number" "agent" {
   }
 }
 
-# Owns the sender pool used by the bridge's optional Twilio Messaging Service
-# delivery mode. The provider cannot manage A2P Brand/Campaign registration;
-# associate this service and its senders with an approved campaign in Twilio
-# before selecting it in GitOps.
+# Owns the single sender used by the bridge's optional Twilio Messaging Service
+# delivery mode. A one-sender service is compatible with a solo-developer
+# A2P campaign and avoids choosing an unregistered number from a multi-sender
+# pool. The provider cannot manage A2P Brand/Campaign registration; associate
+# this service and this sender with an approved campaign in Twilio before
+# selecting it in GitOps.
 resource "twilio_messaging_service" "opencode_sms_bridge" {
   friendly_name                 = local.messaging_service_name
   inbound_request_url           = local.inbound_messaging_url
@@ -55,12 +58,10 @@ resource "twilio_messaging_service" "opencode_sms_bridge" {
 }
 
 # Keep the existing per-number inbound webhook as the authoritative inbound
-# configuration while placing every bridge sender in the service's sender pool.
-resource "twilio_messaging_phone_number" "agent" {
-  for_each = twilio_phone_number.agent
-
+# configuration while assigning the designated outbound sender to the service.
+resource "twilio_messaging_phone_number" "opencode_sms_bridge_sender" {
   service_sid = twilio_messaging_service.opencode_sms_bridge.sid
-  sid         = each.value.sid
+  sid         = twilio_phone_number.agent[local.messaging_service_sender_agent].sid
 }
 
 output "agent_phone_numbers" {
