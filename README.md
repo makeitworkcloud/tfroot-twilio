@@ -20,6 +20,8 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
+| [twilio_messaging_phone_number.agent](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/messaging_phone_number) | resource |
+| [twilio_messaging_service.opencode_sms_bridge](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/messaging_service) | resource |
 | [twilio_phone_number.agent](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/phone_number) | resource |
 
 ## Inputs
@@ -33,4 +35,5 @@ No modules.
 | Name | Description |
 | ---- | ----------- |
 | <a name="output_agent_phone_numbers"></a> [agent\_phone\_numbers](#output\_agent\_phone\_numbers) | Purchased pilot number for each primary agent. |
+| <a name="output_opencode_sms_bridge_messaging_service_sid"></a> [opencode\_sms\_bridge\_messaging\_service\_sid](#output\_opencode\_sms\_bridge\_messaging\_service\_sid) | Twilio Messaging Service SID for the bridge's non-secret GitOps configuration after the service is applied. |
 <!-- END_TF_DOCS -->

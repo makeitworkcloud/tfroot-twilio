@@ -9,7 +9,7 @@ variable "account_sid" {
 }
 
 locals {
-  inbound_messaging_url = "https://sms.makeitwork.cloud/twilio/inbound"
+  inbound_messaging_url  = "https://sms.makeitwork.cloud/twilio/inbound"
   messaging_service_name = "opencode-sms-bridge"
 
   agent_numbers = {
