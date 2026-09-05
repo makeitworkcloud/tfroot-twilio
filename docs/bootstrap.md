@@ -2,17 +2,17 @@
 
 ## Scope
 
-This root validates the OpenTofu toolchain, remote state backend, encrypted provider-credential delivery, and Twilio provider authentication. It now also owns the pilot phone-number inventory: exactly one purchased US local SMS/MMS-capable number per primary agent (`lawnmowerman`, `grillmaster`, `homesteader`, `homerepair`), declared in `numbers.tf`.
+This root validates the OpenTofu toolchain, remote state backend, encrypted provider-credential delivery, and Twilio provider authentication. It owns the pilot phone-number inventory: exactly one purchased US local SMS/MMS-capable number per primary agent (`lawnmowerman`, `grillmaster`, `homesteader`, `homerepair`), declared in `numbers.tf`.
 
-It configures **no** inbound messaging webhook. The `messaging` block on each number is added only in a separately reviewed change after the `kustomize-cluster` bridge is reconciled, healthy, and explicitly approved for functional testing. The root does not own the bridge workload, Cloudflare workload route or DNS, number-to-agent mapping, approved-source allowlist, bridge credentials, or runtime encryption material; those runtime concerns belong to `kustomize-cluster`.
+It also owns the four numbers' inbound `messaging` webhook fields. Each uses `POST` to the healthy, cluster-owned `https://sms.makeitwork.cloud/twilio/inbound` bridge endpoint. The root does not own the bridge workload, Cloudflare workload route or DNS, number-to-agent mapping, approved-source allowlist, bridge credentials, or runtime encryption material; those runtime concerns belong to `kustomize-cluster`.
 
 The evaluated provider is `RJPearson94/twilio` `0.27.1`. The provider is intentionally configured with no static attributes: OpenTofu receives its credentials only in a SOPS `exec-env` child, and the resource `account_sid` reaches OpenTofu only as `TF_VAR_account_sid` inside that same child process. The purchased number values live only in remote state and the `agent_phone_numbers` output.
 
 ## Intended message flow
 
-The owner's intended outcome is one Twilio phone number for each primary agent. Each number will initially accept inbound SMS/MMS only from the one owner-approved source phone number, then route the request to its corresponding agent for a timely reply using that agent's existing context, knowledge base, and MCP integrations. The sender allowlist is intentionally extensible: adding a further approved source number after the pilot is a separate runtime-configuration change, not a Twilio-root redesign.
+The owner's intended outcome is one Twilio phone number for each primary agent. Each number initially accepts inbound SMS/MMS only from the one owner-approved source phone number, then routes the request to its corresponding agent for a timely reply using that agent's existing context, knowledge base, and MCP integrations. The sender allowlist is intentionally extensible: adding a further approved source number after the pilot is a separate runtime-configuration change, not a Twilio-root redesign.
 
-`kustomize-cluster` exclusively owns the bridge workload, number-to-agent map, sender allowlist and its later expansion, runtime secrets, `TunnelBinding`/DNS, and public route. This root may later own only the Twilio number inventory and the inbound messaging-webhook fields pointing at the already-healthy bridge. It must not duplicate any bridge/runtime configuration.
+`kustomize-cluster` exclusively owns the bridge workload, number-to-agent map, sender allowlist and its later expansion, runtime secrets, `TunnelBinding`/DNS, and public route. This root owns only the Twilio number inventory and inbound messaging-webhook fields pointing at the already-healthy bridge. It must not duplicate bridge/runtime configuration.
 
 ## Backend and credential contract
 

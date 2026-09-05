@@ -1,4 +1,3 @@
-# This root has a selected remote backend but intentionally contains no Twilio
-# resources, data sources, provider configuration, or secret material. A later
-# reviewed change must establish encrypted credential delivery before adding a
-# provider block or managing Twilio inventory.
+# The selected remote backend, provider constraints, and provider configuration live
+# in providers.tf. Twilio number inventory and inbound messaging webhooks live in
+# numbers.tf; runtime bridge configuration remains cluster-owned.
