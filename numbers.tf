@@ -1,6 +1,7 @@
 # One pilot number per primary agent. Purchased US local numbers with SMS
-# and MMS capability; no inbound webhook is configured here. The messaging
-# webhook is added only after the kustomize-cluster bridge is healthy.
+# and MMS capability; each inbound message is delivered to the healthy,
+# cluster-owned bridge. Routing, sender allowlisting, and runtime secrets remain
+# owned by kustomize-cluster.
 
 variable "account_sid" {
   type        = string
@@ -8,6 +9,8 @@ variable "account_sid" {
 }
 
 locals {
+  inbound_messaging_url = "https://sms.makeitwork.cloud/twilio/inbound"
+
   agent_numbers = {
     lawnmowerman = "opencode-sms lawnmowerman"
     grillmaster  = "opencode-sms grillmaster"
@@ -30,6 +33,11 @@ resource "twilio_phone_number" "agent" {
       sms_enabled = true
       mms_enabled = true
     }
+  }
+
+  messaging {
+    url    = local.inbound_messaging_url
+    method = "POST"
   }
 }
 
