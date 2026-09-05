@@ -20,7 +20,7 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
-| [twilio_messaging_phone_number.agent](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/messaging_phone_number) | resource |
+| [twilio_messaging_phone_number.opencode_sms_bridge_sender](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/messaging_phone_number) | resource |
 | [twilio_messaging_service.opencode_sms_bridge](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/messaging_service) | resource |
 | [twilio_phone_number.agent](https://registry.terraform.io/providers/RJPearson94/twilio/0.27.1/docs/resources/phone_number) | resource |
 
